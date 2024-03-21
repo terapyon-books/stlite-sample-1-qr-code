@@ -5,17 +5,26 @@ import cv2
 import numpy as np
 
 
+error_corrections = {
+    "L": qrcode.constants.ERROR_CORRECT_L,
+    "M": qrcode.constants.ERROR_CORRECT_M,
+    "Q": qrcode.constants.ERROR_CORRECT_Q,
+    "H": qrcode.constants.ERROR_CORRECT_H,
+}
+
+
 st.title("QRコード生成・確認アプリ")
 st.text("QRコードの生成やQRコード画像の確認を行います")
 
 
 @st.cache_data
-def generate_qr_code(text) -> bytes:
+def generate_qr_code(text, version, error_correction, box_size, border) -> bytes:
+    print(box_size, border)
     qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
+        version=version,
+        error_correction=error_correction,  # qrcode.constants.ERROR_CORRECT_L,
+        box_size=box_size,
+        border=border,
     )
     qr.add_data(text)
     qr.make(fit=True)
@@ -28,8 +37,21 @@ def generate_qr_code(text) -> bytes:
 
 st.subheader("QRコード生成")
 text = st.text_input("QRコードに変換したい文字列を入力してください")
+version = st.slider("バージョン", 1, 40, 1)
+error_level = st.selectbox(
+    "誤り訂正レベル",
+    ["L", "M", "Q", "H"],
+)
+box_size = st.slider("ボックスサイズ (QRコードの各「ボックス」のピクセル数)", 1, 50, 10)
+border = st.slider("ボーダー(画像の隙間サイズ)", 1, 20, 4)
 if text or st.button("QRコードを確認"):
-    img_value = generate_qr_code(text)
+    if error_level is not None:
+        error_correction = error_corrections.get(
+            error_level, qrcode.constants.ERROR_CORRECT_L
+        )
+    else:
+        error_correction = qrcode.constants.ERROR_CORRECT_L
+    img_value = generate_qr_code(text, version, error_correction, box_size, border)
     st.image(img_value, width=150)
     st.text(f"QRコード文字列: {text}")
     st.download_button(
