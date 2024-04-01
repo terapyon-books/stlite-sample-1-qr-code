@@ -2,7 +2,7 @@
 
 - 名称: stlite-sample-1-qr-code
 - 目的: Streamlitの最小限のサンプル用デモアプリ
-- 機能: QRコードの表示と確認
+- 機能: QRコードの生成と確認
 
 このレポジトリは、XXXX用のサンプルデモアプリです。
 PythonスクリプトやJupyterLabで実行できるものをStreamlitでGUI化を行います。
