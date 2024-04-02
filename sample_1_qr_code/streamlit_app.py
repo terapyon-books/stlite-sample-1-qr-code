@@ -19,7 +19,6 @@ st.text("QRコードの生成やQRコード画像の確認を行います")
 
 @st.cache_data
 def generate_qr_code(text, version, error_correction, box_size, border) -> bytes:
-    print(box_size, border)
     qr = qrcode.QRCode(
         version=version,
         error_correction=error_correction,  # qrcode.constants.ERROR_CORRECT_L,
