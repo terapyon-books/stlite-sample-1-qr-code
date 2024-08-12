@@ -28,8 +28,8 @@
     },
     "stlite": {
         "desktop": {
-        "files": ["streamlit_app.py"],
-        "entrypoint": "streamlit_app.py"
+        "files": ["sample_1_qr_code/streamlit_app.py"],
+        "entrypoint": "sample_1_qr_code/streamlit_app.py"
         }
     }
   }
