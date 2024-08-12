@@ -1,6 +1,11 @@
 {
     "name": "sample-1-qr-code",
     "version": "0.1.0",
+    "homepage": "https://github.com/terapyon-books/stlite-sample-1-qr-code",
+    "author": {
+        "name": "Manabu TERADA",
+        "email": "terapyon@example.com"
+    },
     "main": "./build/electron/main.js",
     "scripts": {
       "dump": "dump-stlite-desktop-artifacts",
@@ -16,9 +21,15 @@
       }
     },
     "devDependencies": {
-      "@stlite/desktop": "^0.46.1",
+      "@stlite/desktop": "^0.60.2",
       "cross-env": "^7.0.3",
-      "electron": "^28.2.1",
-      "electron-builder": "^24.9.1"
+      "electron": "30.0.8",
+      "electron-builder": "^24.13.3"
+    },
+    "stlite": {
+        "desktop": {
+        "files": ["streamlit_app.py"],
+        "entrypoint": "streamlit_app.py"
+        }
     }
   }
