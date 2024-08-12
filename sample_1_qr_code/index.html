@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>stlite app</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.2/build/stlite.css" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.2/build/stlite.js"></script>
+  <script>
+    stlite.mount(
+      {
+        requirements: ["qrcode", "opencv-python"],
+        entrypoint: "streamlit_app.py",
+        files: {
+          "streamlit_app.py": `
+from io import BytesIO
+import streamlit as st
+import qrcode  # type: ignore
+import cv2
+import numpy as np
+
+
+error_corrections = {
+    "L": qrcode.constants.ERROR_CORRECT_L,
+    "M": qrcode.constants.ERROR_CORRECT_M,
+    "Q": qrcode.constants.ERROR_CORRECT_Q,
+    "H": qrcode.constants.ERROR_CORRECT_H,
+}
+
+
+st.title("QRコード生成・確認アプリ")
+st.text("QRコードの生成やQRコード画像の確認を行います")
+
+
+@st.cache_data
+def generate_qr_code(text, version, error_correction, box_size, border) -> bytes:
+    qr = qrcode.QRCode(
+        version=version,
+        error_correction=error_correction,  # qrcode.constants.ERROR_CORRECT_L,
+        box_size=box_size,
+        border=border,
+    )
+    qr.add_data(text)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    with BytesIO() as output:
+        img.save(output, format="PNG")
+        img_value = output.getvalue()
+    return img_value
+
+
+st.subheader("QRコード生成")
+text = st.text_input("QRコードに変換したい文字列を入力してください")
+version = st.slider("バージョン", 1, 40, 1)
+error_level = st.selectbox(
+    "誤り訂正レベル",
+    ["L", "M", "Q", "H"],
+)
+box_size = st.slider("ボックスサイズ (QRコードの各「ボックス」のピクセル数)", 1, 50, 10)
+border = st.slider("ボーダー(画像の隙間サイズ)", 1, 20, 4)
+if text or st.button("QRコードを確認"):
+    if error_level is not None:
+        error_correction = error_corrections.get(
+            error_level, qrcode.constants.ERROR_CORRECT_L
+        )
+    else:
+        error_correction = qrcode.constants.ERROR_CORRECT_L
+    img_value = generate_qr_code(text, version, error_correction, box_size, border)
+    st.image(img_value, width=150)
+    st.text(f"QRコード文字列: {text}")
+    st.download_button(
+        "QRコードをダウンロード",
+        data=img_value,
+        file_name="qr_code.png",
+        mime="image/png",
+    )
+
+
+st.subheader("QRコード確認")
+uploaded_file = st.file_uploader(
+    "QRコード画像をアップロード",
+    type=["png", "jpg", "jpeg", "svg", "gif", "bmp", "tiff", "webp"],
+)
+
+if uploaded_file:
+    uploaded_file_bytes = uploaded_file.read()
+    uploaded_array = np.frombuffer(uploaded_file_bytes, np.uint8)
+    uploaded_img = cv2.imdecode(uploaded_array, cv2.IMREAD_COLOR)
+    qrdetector = cv2.QRCodeDetectorAruco()
+    retval, decoded_info, points, straight_code = qrdetector.detectAndDecodeMulti(
+        uploaded_img
+    )
+    if retval:
+        new_img = cv2.polylines(
+            uploaded_img, points.astype(int), True, (0, 0, 255), thickness=2
+        )
+        text_offset = 10
+        for i, info in enumerate(decoded_info):
+            st.text(f"No.{i+1} QRコード文字列: {info}")
+            points_of_this = points[i, :, :].astype(int)
+            new_img = cv2.putText(
+                new_img,
+                f"No. {i+1}",
+                (points_of_this[0, 0], points_of_this[0, 1] - text_offset),
+                cv2.FONT_HERSHEY_PLAIN,
+                1,
+                (0, 0, 255),
+                thickness=2,
+                lineType=cv2.LINE_AA,
+            )
+        st.image(new_img, width=300)
+    else:
+        st.text("QRコードが見つかりませんでした")
+`
+        },
+      },
+      document.getElementById("root"),
+    );
+  </script>
+</body>
+
+</html>
