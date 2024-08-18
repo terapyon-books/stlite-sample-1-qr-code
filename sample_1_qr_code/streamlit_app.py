@@ -1,6 +1,6 @@
 from io import BytesIO
 import streamlit as st
-import qrcode  # type: ignore
+import qrcode
 import cv2
 import numpy as np
 
@@ -21,7 +21,7 @@ st.write("QRコードの生成やQRコード画像の確認を行います")
 def generate_qr_code(text, version, error_correction, box_size, border) -> bytes:
     qr = qrcode.QRCode(
         version=version,
-        error_correction=error_correction,  # qrcode.constants.ERROR_CORRECT_L,
+        error_correction=error_correction,
         box_size=box_size,
         border=border,
     )
@@ -41,7 +41,7 @@ error_level = st.selectbox(
     "誤り訂正レベル",
     ["L", "M", "Q", "H"],
 )
-box_size = st.slider("ボックスサイズ (QRコードの各「ボックス」のピクセル数)", 1, 50, 10)
+box_size = st.slider("ボックスサイズ (QRコードの各「ボックス」のピクセル数)", 1, 50, 5)
 border = st.slider("ボーダー(画像の隙間サイズ)", 1, 20, 4)
 if text or st.button("QRコードを確認"):
     if error_level is not None:
@@ -51,7 +51,7 @@ if text or st.button("QRコードを確認"):
     else:
         error_correction = qrcode.constants.ERROR_CORRECT_L
     img_value = generate_qr_code(text, version, error_correction, box_size, border)
-    st.image(img_value, width=150)
+    st.image(img_value)
     st.write(f"QRコード文字列: {text}")
     st.download_button(
         "QRコードをダウンロード",
@@ -76,23 +76,9 @@ if uploaded_file:
         uploaded_img
     )
     if retval:
-        new_img = cv2.polylines(
-            uploaded_img, points.astype(int), True, (0, 0, 255), thickness=2
-        )
-        text_offset = 10
         for i, info in enumerate(decoded_info):
             st.write(f"No.{i+1} QRコード文字列: {info}")
-            points_of_this = points[i, :, :].astype(int)
-            new_img = cv2.putText(
-                new_img,
-                f"No. {i+1}",
-                (points_of_this[0, 0], points_of_this[0, 1] - text_offset),
-                cv2.FONT_HERSHEY_PLAIN,
-                1,
-                (0, 0, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA,
-            )
-        st.image(new_img, width=300)
     else:
         st.error("QRコードが見つかりませんでした")
+    st.write("アップロードしたファイルの画像")
+    st.image(uploaded_file_bytes)
