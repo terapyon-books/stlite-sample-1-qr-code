@@ -14,7 +14,7 @@ error_corrections = {
 
 
 st.title("QRコード生成・確認アプリ")
-st.text("QRコードの生成やQRコード画像の確認を行います")
+st.write("QRコードの生成やQRコード画像の確認を行います")
 
 
 @st.cache_data
@@ -52,7 +52,7 @@ if text or st.button("QRコードを確認"):
         error_correction = qrcode.constants.ERROR_CORRECT_L
     img_value = generate_qr_code(text, version, error_correction, box_size, border)
     st.image(img_value, width=150)
-    st.text(f"QRコード文字列: {text}")
+    st.write(f"QRコード文字列: {text}")
     st.download_button(
         "QRコードをダウンロード",
         data=img_value,
@@ -81,7 +81,7 @@ if uploaded_file:
         )
         text_offset = 10
         for i, info in enumerate(decoded_info):
-            st.text(f"No.{i+1} QRコード文字列: {info}")
+            st.write(f"No.{i+1} QRコード文字列: {info}")
             points_of_this = points[i, :, :].astype(int)
             new_img = cv2.putText(
                 new_img,
@@ -95,4 +95,4 @@ if uploaded_file:
             )
         st.image(new_img, width=300)
     else:
-        st.text("QRコードが見つかりませんでした")
+        st.error("QRコードが見つかりませんでした")
